@@ -1,6 +1,5 @@
 from django.db import models
 from users.models import CustomUser
-from django.core.validators import MinValueValidator
 
 
 class Tag(models.Model):
@@ -48,7 +47,7 @@ class Ingredient(models.Model):
         return f"{self.name} {self.measurement_unit}"
 
 
-class Recipes(models.Model):
+class Recipe(models.Model):
     author = models.ForeignKey(
         CustomUser,
         verbose_name='Автор рецепта',
@@ -105,9 +104,9 @@ class Recipes(models.Model):
 
 class IngredientsAmount(models.Model):
     recipe = models.ForeignKey(
-        Recipes,
+        Recipe,
         verbose_name='Рецепт',
-        related_name='ingredient',
+        related_name='ingredientsamount_set',
         on_delete=models.CASCADE,
     )
     ingredient_name = models.ForeignKey(
@@ -119,8 +118,6 @@ class IngredientsAmount(models.Model):
     amount = models.PositiveSmallIntegerField(
         verbose_name='Количество',
         default=0,
-        validators=[
-            MinValueValidator(1, message='Количество должно быть больше нуля')]
     )
 
     class Meta:
@@ -137,7 +134,7 @@ class IngredientsAmount(models.Model):
         return f'{self.amount} {self.ingredient_name}'
 
 
-class Favorites(models.Model):
+class Favorite(models.Model):
     user = models.ForeignKey(
         CustomUser,
         verbose_name='Пользователь',
@@ -145,7 +142,7 @@ class Favorites(models.Model):
         on_delete=models.CASCADE,
     )
     recipe = models.ForeignKey(
-        Recipes,
+        Recipe,
         verbose_name='Избранные рецепты',
         related_name='in_favorites',
         on_delete=models.CASCADE
@@ -172,8 +169,8 @@ class ShoppingList(models.Model):
         related_name='shopping_list',
         on_delete=models.CASCADE,
     )
-    recipes = models.ForeignKey(
-        Recipes,
+    recipe = models.ForeignKey(
+        Recipe,
         verbose_name='Рецепты в корзине',
         related_name='in_shopping_list',
         on_delete=models.CASCADE,
@@ -184,10 +181,10 @@ class ShoppingList(models.Model):
         verbose_name_plural = 'Списки покупок'
         constraints = [
             models.UniqueConstraint(
-                fields=('recipes', 'user',),
+                fields=('recipe', 'user',),
                 name='unique_shopping_list_recipe_user',
             ),
         ]
 
     def __str__(self):
-        return f'{self.user}. {self.recipes}'
+        return f'{self.user}. {self.recipe}'

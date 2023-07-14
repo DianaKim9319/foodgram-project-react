@@ -1,150 +1,66 @@
+from django.http import HttpResponse
+from django.db.models import Sum
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter
-from rest_framework.exceptions import ValidationError, MethodNotAllowed
 from rest_framework.pagination import PageNumberPagination
-
-from django.shortcuts import get_object_or_404
-from django.contrib.auth.hashers import check_password
-from django.http import FileResponse
-from django.db.models import Count, Q
+from djoser.views import UserViewSet
+from djoser.serializers import SetPasswordSerializer
 
 from users.models import CustomUser, Follow
-from recipes.models import (Tag, Ingredient, Recipes,
-                            Favorites, ShoppingList, IngredientsAmount)
-from .serializers import (CustomUserSerializer, CurrentUserSerializer,
-                          IngredientSerializer,
-                          TagSerializer, RecipeSerializer,
-                          SubscriptionPageSerializer)
-from api.permissions import (AdminOrReadOnly, AuthorOrAdminOrReadOnly,
-                             CustomUserCreatePermission)
+from recipes.models import (Tag, Ingredient, Recipe,
+                            Favorite, ShoppingList, IngredientsAmount)
+from .serializers import (CustomUserSerializer,
+                          IngredientSearchSerializer,
+                          TagSerializer, RecipeSerializer, RecipeCreateSerializer,
+                          SubscriptionPageSerializer, ShortRecipeSerializer)
+from .mixins import AddDeleteMixin
+from .permissions import AuthorOrReadOnly
 
 
-class CustomUserViewSet(viewsets.ModelViewSet):
-    permission_classes = [CustomUserCreatePermission]
+class BasePermissionViewSet(viewsets.ModelViewSet):
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        elif self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAdminUser()]
+        return super().get_permissions()
+
+
+class CustomUserViewSet(UserViewSet, AddDeleteMixin):
     pagination_class = PageNumberPagination
     queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
 
     def get_serializer_class(self):
-        if self.action == 'me':
-            return CurrentUserSerializer
+        if self.action == 'set_password':
+            return SetPasswordSerializer
         return CustomUserSerializer
-
-    @action(detail=False, methods=['get'], url_path='me')
-    def me(self, request):
-        if request.user.is_anonymous:
-            return Response(
-                {
-                    'detail': 'Учетные данные не были предоставлены.'
-                }, status=401
-            )
-        serializer = self.get_serializer(request.user)
-        return Response(serializer.data)
-
-    @action(detail=False, methods=['get'], )
-    def login(self, request):
-        email = request.data.get('email')
-        password = request.data.get('password')
-
-        user = get_object_or_404(CustomUser, email=email)
-
-        if check_password(password, user.password):
-            return Response(
-                {
-                    'message': 'Авторизация выполнена'
-                }, status=status.HTTP_200_OK
-            )
-        else:
-            return Response(
-                {
-                    'message': 'Неверный пароль'
-                }, status=status.HTTP_401_UNAUTHORIZED
-            )
-
-    @action(detail=False, methods=['post'])
-    def set_password(self, request):
-        current_password = request.data.get('current_password')
-        new_password = request.data.get('new_password')
-
-        user = request.user
-
-        if check_password(current_password, user.password):
-            user.set_password(new_password)
-            user.save()
-            return Response(
-                {
-                    'message': 'Пароль успешно обновлён.'
-                }, status=status.HTTP_200_OK
-            )
-        else:
-            return Response(
-                {
-                    'message': 'Неверный пароль.'
-                }, status=status.HTTP_401_UNAUTHORIZED
-            )
 
     @action(
         detail=True,
         methods=['post', 'delete'],
         url_path='subscribe',
-        permission_classes=(IsAuthenticated,)
+        permission_classes=(IsAuthenticated,),
     )
-    def subscribe_unsubscribe(self, request, pk=None):
-        user = request.user
-        author = get_object_or_404(CustomUser, id=pk)
+    def subscribe_unsubscribe(self, request, id=None):
+        author = get_object_or_404(CustomUser, id=id)
 
-        if author is None:
-            raise ValidationError({'error': ['Автор не существует.']})
-
-        if request.method == 'POST':
-            follow, created = Follow.objects.get_or_create(
-                user=request.user,
-                author=author
-            )
-            if created is not None:
-                response_data = {
-                    'email': user.email,
-                    'id': user.id,
-                    'username': user.username,
-                    'first_name': user.first_name,
-                    'last_name': user.last_name,
-                    'is_subscribed': True,
-                    'recipes': [
-                        {
-                            'id': recipe.id,
-                            'name': recipe.name,
-                            'image': recipe.image.url,
-                            'cooking_time': recipe.cooking_time
-                        }
-                        for recipe in author.recipes.all()
-                    ],
-                    'recipes_count': author.recipes.count()
-                }
-                return Response(response_data, status=status.HTTP_201_CREATED)
-            else:
-                raise ValidationError(
-                    {'error': ['Вы уже подписаны на автора.']}
-                )
-
-        elif request.method == 'DELETE':
-            follow = Follow.objects.filter(user=request.user, author=author)
-            if follow is not None:
-                follow.delete()
-                response_data = {
-                    'message': 'Вы успешно отписались от автора.'
-                }
-                return Response(
-                    response_data,
-                    status=status.HTTP_200_OK
-                )
-            else:
-                raise ValidationError(
-                    {'error': ['Вы не подписаны на автора.']}
-                )
-
-        raise MethodNotAllowed(request.method)
+        return self.add_delete(
+            request=request,
+            model=Follow,
+            serializer_class=SubscriptionPageSerializer,
+            error_message={
+                'post': 'Вы уже подписаны на автора.',
+                'delete': 'Вы не подписаны на автора.'
+            },
+            success_message='Вы успешно отписались от автора.',
+            item=author,
+            field_name='author'
+        )
 
     @action(
         detail=False,
@@ -166,10 +82,9 @@ class CustomUserViewSet(viewsets.ModelViewSet):
         return self.get_paginated_response(serializer.data)
 
 
-class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+class IngredientViewSet(BasePermissionViewSet):
     queryset = Ingredient.objects.all()
-    serializer_class = IngredientSerializer
-    permission_classes = (AdminOrReadOnly,)
+    serializer_class = IngredientSearchSerializer
     filter_backends = [SearchFilter]
     search_fields = ['name__istartswith']
     search_param = "name"
@@ -190,18 +105,22 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
 
-class TagViewSet(viewsets.ModelViewSet):
+class TagViewSet(BasePermissionViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    permission_classes = (AdminOrReadOnly,)
     pagination_class = None
 
 
-class RecipeViewSet(viewsets.ModelViewSet):
-    queryset = Recipes.objects.all()
-    serializer_class = RecipeSerializer
+class RecipeViewSet(viewsets.ModelViewSet, AddDeleteMixin):
+    queryset = Recipe.objects.all()
     pagination_class = PageNumberPagination
-    permission_classes = (AuthorOrAdminOrReadOnly,)
+    permission_classes = (AuthorOrReadOnly,)
+    serializer_class = RecipeSerializer
+
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return RecipeSerializer
+        return RecipeCreateSerializer
 
     def get_queryset(self):
         queryset = self.queryset
@@ -213,14 +132,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 queryset = queryset.filter(author_id=author)
 
         tags = self.request.query_params.getlist('tags')
-        if tags is not None and len(tags) > 0:
-            q_objects = Q()
-            for tag in tags:
-                q_objects |= Q(tags__slug=tag)
-            queryset = queryset.annotate(
-                matched_tags=Count('tags', filter=q_objects))\
-                .filter(matched_tags__gt=0
-                        )
+        if tags:
+            queryset = queryset.filter(tags__slug__in=tags)
 
         if not self.request.user.is_anonymous:
             is_in_cart = self.request.query_params.get(
@@ -258,40 +171,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def favorite(self, request, pk=None):
-        recipe = get_object_or_404(Recipes, id=pk)
-        if recipe is None:
-            raise ValidationError({'error': ['Рецепт не найден.']})
-
-        if request.method == 'POST':
-            favorites, created = Favorites.objects.get_or_create(
-                user=request.user, recipe=recipe
-            )
-            if created is not None:
-                response_data = {
-                    'id': recipe.id,
-                    'name': recipe.name,
-                    'image': recipe.image.url,
-                    'cooking_time': recipe.cooking_time
-                }
-                return Response(response_data, status=status.HTTP_201_CREATED)
-            else:
-                raise ValidationError({'error': ['Рецепт уже в избранном.']})
-
-        elif request.method == 'DELETE':
-            favorites = (
-                Favorites.objects
-                .filter(user=request.user, recipe=recipe)
-            )
-            if favorites is not None:
-                favorites.delete()
-                response_data = {
-                    'message': "Рецепт успешно удален из избранного."
-                }
-                return Response(response_data, status=status.HTTP_200_OK)
-            else:
-                raise ValidationError({'error': ['Рецепт не в избранном.']})
-
-        raise MethodNotAllowed(request.method)
+        recipe = get_object_or_404(Recipe, id=pk)
+        return self.add_delete(
+            request=request,
+            model=Favorite,
+            serializer_class=ShortRecipeSerializer,
+            error_message={
+                'post': 'Рецепт уже в избранном.',
+                'delete': 'Рецепт не в избранном.'
+            },
+            success_message='Рецепт успешно удален из избранного.',
+            item=recipe,
+            field_name='recipe'
+        )
 
     @action(
         detail=True,
@@ -300,45 +192,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def shopping_list(self, request, pk=None):
-        recipe = get_object_or_404(Recipes, id=pk)
-        if recipe is None:
-            raise ValidationError({'error': ['Рецепт не найден.']})
-
-        if request.method == 'POST':
-            shopping_list, created = ShoppingList.objects.get_or_create(
-                user=request.user,
-                recipes=recipe
-            )
-            if created is not None:
-                response_data = {
-                    'id': recipe.id,
-                    'name': recipe.name,
-                    'image': recipe.image.url,
-                    'cooking_time': recipe.cooking_time
-                }
-                return Response(response_data, status=status.HTTP_201_CREATED)
-            else:
-                raise ValidationError(
-                    {'error': ['Рецепт уже в списке покупок.']}
-                )
-
-        elif request.method == 'DELETE':
-            shopping_list = ShoppingList.objects.filter(
-                user=request.user,
-                recipes=recipe
-            )
-            if shopping_list is not None:
-                shopping_list.delete()
-                response_data = {
-                    'message': 'Рецепт успешно удален из списка покупок.'
-                }
-                return Response(response_data, status=status.HTTP_200_OK)
-            else:
-                raise ValidationError(
-                    {'error': ['Рецепт не в списке покупок.']}
-                )
-
-        raise MethodNotAllowed(request.method)
+        recipe = get_object_or_404(Recipe, id=pk)
+        return self.add_delete(
+            request=request,
+            model=ShoppingList,
+            serializer_class=ShortRecipeSerializer,
+            error_message={
+                'post': 'Рецепт уже в списке покупок.',
+                'delete': 'Рецепт не в списке покупок.'
+            },
+            success_message='Рецепт успешно удален из списка покупок.',
+            item=recipe,
+            field_name='recipe'
+        )
 
     @action(
         methods=['get'],
@@ -353,36 +219,28 @@ class RecipeViewSet(viewsets.ModelViewSet):
         shopping_list = (
             ShoppingList.objects
             .filter(user=user)
-            .values_list('recipes__pk', flat=True)
+            .values_list('recipe__pk', flat=True)
         )
-        ingredients = IngredientsAmount.objects.filter(
-            recipe__in=shopping_list
+        ingredients = (
+            IngredientsAmount.objects
+            .filter(recipe__in=shopping_list)
+            .values('ingredient_name__name', 'ingredient_name__measurement_unit')
+            .annotate(sum_amount=Sum('amount'))
         )
-        ingredient_totals = {}
-        for ingredient in ingredients:
-            name = ingredient.ingredient_name.name
-            unit = ingredient.ingredient_name.measurement_unit
-            amount = ingredient.amount
+        ingredient_totals = {
+            ingredient['ingredient_name__name']: {
+                'amount': ingredient['sum_amount'],
+                'unit': ingredient['ingredient_name__measurement_unit']
+            }
+            for ingredient in ingredients
+        }
 
-            if name in ingredient_totals:
-                # Если ингредиент уже есть в списке, плюсум количество.
-                ingredient_totals[name]['amount'] += amount
-            else:
-                # Если ингредиент новый, то добавляем его.
-                ingredient_totals[name] = {'amount': amount, 'unit': unit}
-
-        # Создаем временный файл TXT
+        # Создаем динамический файл TXT
         filename = 'shopping_list.txt'
-        with open(filename, 'w', encoding='utf-8') as file:
-            file.write('Ингредиент, Количество, Единица измерения:\n')
-            for ingredient, data in ingredient_totals.items():
-                line = f'- {ingredient}, {data["amount"]}, {data["unit"]}\n'
-                file.write(line)
-
-        # Создаем FileResponse,
-        # открывая временный файл в режиме чтения байтов ("rb"),
-        # и устанавливаем заголовок Content-Disposition,
-        # чтобы указать имя файла для скачивания
-        response = FileResponse(open(filename, 'rb'))
-        response['Content-Disposition'] = f'attachment; filename={filename}'
+        response = HttpResponse(content_type='text/plain')
+        response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
+        response.write('Ингредиент, Количество, Единица измерения:\n')
+        for ingredient, data in ingredient_totals.items():
+            line = f'- {ingredient}, {data["amount"]}, {data["unit"]}\n'
+            response.write(line)
         return response

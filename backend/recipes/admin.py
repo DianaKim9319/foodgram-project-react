@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.db import models
-from .models import Recipes, Ingredient, Tag, IngredientsAmount
+
+from .models import Recipe, Ingredient, Tag, IngredientsAmount
 
 
 class AdminPermissions(admin.ModelAdmin):
@@ -18,7 +19,7 @@ class IngredientsAmountInline(admin.TabularInline):
     model = IngredientsAmount
 
 
-@admin.register(Recipes)
+@admin.register(Recipe)
 class RecipesAdmin(AdminPermissions):
     list_display = ('name', 'author', 'favorite_count')
     list_filter = ('author', 'name', 'tags')
