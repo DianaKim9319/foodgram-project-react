@@ -15,8 +15,11 @@ from recipes.models import (Tag, Ingredient, Recipe,
                             Favorite, ShoppingList, IngredientsAmount)
 from .serializers import (CustomUserSerializer,
                           IngredientSearchSerializer,
-                          TagSerializer, RecipeSerializer, RecipeCreateSerializer,
-                          SubscriptionPageSerializer, ShortRecipeSerializer)
+                          TagSerializer,
+                          RecipeSerializer,
+                          RecipeCreateSerializer,
+                          SubscriptionPageSerializer,
+                          ShortRecipeSerializer)
 from .mixins import AddDeleteMixin
 from .permissions import AuthorOrReadOnly
 
@@ -224,7 +227,10 @@ class RecipeViewSet(viewsets.ModelViewSet, AddDeleteMixin):
         ingredients = (
             IngredientsAmount.objects
             .filter(recipe__in=shopping_list)
-            .values('ingredient_name__name', 'ingredient_name__measurement_unit')
+            .values(
+                'ingredient_name__name',
+                'ingredient_name__measurement_unit'
+            )
             .annotate(sum_amount=Sum('amount'))
         )
         ingredient_totals = {
@@ -238,7 +244,9 @@ class RecipeViewSet(viewsets.ModelViewSet, AddDeleteMixin):
         # Создаем динамический файл TXT
         filename = 'shopping_list.txt'
         response = HttpResponse(content_type='text/plain')
-        response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
+        response['Content-Disposition'] = 'attachment; filename={0}'.format(
+            filename
+        )
         response.write('Ингредиент, Количество, Единица измерения:\n')
         for ingredient, data in ingredient_totals.items():
             line = f'- {ingredient}, {data["amount"]}, {data["unit"]}\n'
