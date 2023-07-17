@@ -1,22 +1,19 @@
 from django.utils.translation import gettext_lazy as _
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.serializers import (ModelSerializer,
                                         CharField,
                                         SerializerMethodField,
                                         PrimaryKeyRelatedField,
                                         IntegerField,
                                         ListField)
-
 from djoser.serializers import (UserCreateSerializer,
                                 UserSerializer)
 
-from users.models import CustomUser, Follow
+from users.models import CustomUser
 from recipes.models import (Recipe,
                             Ingredient,
                             Tag,
-                            IngredientsAmount,
-                            Favorite)
-from .validators import tags_validator, ingredients_validator
+                            IngredientsAmount,)
+from .validators import ingredients_validator
 from .mixins import IsSubscribedMixin, IngredienteMixin
 from .fields import Base64ImageField
 
@@ -36,13 +33,6 @@ class CurrentUserSerializer(UserSerializer, IsSubscribedMixin):
             'last_name',
             'is_subscribed'
         )
-
-    def to_representation(self, instance):
-        request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            return super().to_representation(instance)
-        else:
-            raise PermissionDenied("Учетные данные не были предоставлены")
 
 
 class CustomUserSerializer(UserCreateSerializer, IsSubscribedMixin):
@@ -121,7 +111,8 @@ class TagSerializer(ModelSerializer):
 
 
 class IngredientSearchSerializer(ModelSerializer):
-    """Сериализатор для выбора ингредиентов из списка"""
+    """Сериализатор для выбора ингредиентов из списка."""
+
     class Meta:
         model = Ingredient
         fields = '__all__'
@@ -129,20 +120,19 @@ class IngredientSearchSerializer(ModelSerializer):
 
 
 class IngredientSerializer(ModelSerializer):
-    """Сериализатор для вывода информации об ингредиентах"""
-    amount = SerializerMethodField()
+    """Сериализатор для вывода информации об ингредиентах."""
+
+    id = IntegerField(source='ingredient_name.id')
+    name = CharField(source='ingredient_name.name')
+    measurement_unit = CharField(source='ingredient_name.measurement_unit')
 
     class Meta:
-        model = Ingredient
+        model = IngredientsAmount
         fields = ('id', 'name', 'measurement_unit', 'amount')
-
-    def get_amount(self, obj):
-        ingredients_amount = obj.recipe.filter(ingredient_name=obj).first()
-        return ingredients_amount.amount
 
 
 class IngredientAddSerializer(ModelSerializer):
-    """Сериализатор ингредиентов при создании рецепта"""
+    """Сериализатор ингредиентов при создании рецепта."""
 
     id = PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
     amount = IntegerField()
@@ -158,7 +148,7 @@ class RecipeSerializer(ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     author = CustomUserSerializer(read_only=True)
     ingredients = IngredientSerializer(
-        read_only=True, many=True
+        read_only=True, many=True, source='ingredientsamount_set'
     )
     is_favorited = SerializerMethodField()
     is_in_shopping_cart = SerializerMethodField()
@@ -198,6 +188,7 @@ class RecipeSerializer(ModelSerializer):
 
 class RecipeCreateSerializer(ModelSerializer, IngredienteMixin):
     """Сериализатор для создания рецептов."""
+
     tags = PrimaryKeyRelatedField(
         queryset=Tag.objects.all(),
         many=True
@@ -230,13 +221,12 @@ class RecipeCreateSerializer(ModelSerializer, IngredienteMixin):
         user = self.context.get('request').user
         tags = data.get('tags')
         ingredients = data.get('ingredients')
-        tags_validated = tags_validator(tags, Tag)
         ingredients_validated = ingredients_validator(ingredients)
 
         data.update(
             {
                 'author': user,
-                'tags': tags_validated,
+                'tags': tags,
                 'ingredients': ingredients_validated,
             }
         )
@@ -268,30 +258,4 @@ class RecipeCreateSerializer(ModelSerializer, IngredienteMixin):
             instance.tags.clear()
             instance.tags.set(tags_data)
 
-        instance.save()
         return recipe
-
-
-class FavoriteSerializer(ModelSerializer):
-    """Сериализатор модели избранного."""
-    class Meta:
-        model = Favorite
-        fields = ['id', 'name', 'image', 'cooking_time']
-
-    def get_is_subscribed(self, obj):
-        request = self.context.get('request')
-        return Follow.objects.filter(
-            author=obj.author, user=request.user
-        ).exists()
-
-    @staticmethod
-    def get_recipes(obj):
-        author = obj.author
-        recipes = Recipe.objects.filter(author=author)
-        serializer = ShortRecipeSerializer(recipes, many=True)
-        return serializer.data
-
-    @staticmethod
-    def get_recipes_count(obj):
-        author = obj.author
-        return author.recipes.count()

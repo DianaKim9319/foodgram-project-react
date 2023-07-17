@@ -38,7 +38,7 @@ class AddDeleteMixin:
             success_message
     ):
         if request.method == 'POST':
-            model_obj, created = model.objects.get_or_create(
+            _, created = model.objects.get_or_create(
                 user=request.user,
                 **{field_name: item}
             )
@@ -51,26 +51,24 @@ class AddDeleteMixin:
                     serializer.data,
                     status=status.HTTP_201_CREATED
                 )
-            else:
-                return Response(
-                    {'error': [error_message['post']]},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-        else:
-            model_obj = model.objects.filter(
-                user=request.user,
-                **{field_name: item}
+            return Response(
+                {'error': [error_message['post']]},
+                status=status.HTTP_400_BAD_REQUEST
             )
-            if model_obj.exists():
-                model_obj.delete()
-                response_data = {'message': success_message}
-                return Response(
-                    response_data,
-                    status=status.HTTP_200_OK
-                )
-            else:
-                return Response(
-                    {'error': [error_message['delete']]},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+
+        model_obj = model.objects.filter(
+            user=request.user,
+            **{field_name: item}
+        )
+        if model_obj.exists():
+            model_obj.delete()
+            response_data = {'message': success_message}
+            return Response(
+                response_data,
+                status=status.HTTP_200_OK
+            )
+
+        return Response(
+            {'error': [error_message['delete']]},
+            status=status.HTTP_400_BAD_REQUEST
+        )
