@@ -2,7 +2,7 @@ FROM python:3.9
 
 RUN apt-get update &&\
     apt-get upgrade -y &&\
-    apt-get install -y libpq-dev gcc netcat
+    apt-get install -y libpq-dev gcc netcat-traditional
 
 WORKDIR /app
 
