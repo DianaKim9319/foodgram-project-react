@@ -4,6 +4,7 @@ from rest_framework import permissions
 class AuthorOrReadOnly(permissions.BasePermission):
     """
     Позволяет только автору изменять объекты.
+
     Остальным разрешены только безопасные методы (GET, HEAD, OPTIONS).
 
     """

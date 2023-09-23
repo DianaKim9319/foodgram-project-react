@@ -2,6 +2,12 @@ from django.core.exceptions import ValidationError
 
 
 def ingredients_validator(ingredients):
+    """
+    Валидирует список ингредиентов.
+
+    Проверяет, что каждый ингредиент имеет положительное количество и что
+    ингредиенты не повторяются.
+    """
     ingredient_names = set()
 
     for ingredient in ingredients:
