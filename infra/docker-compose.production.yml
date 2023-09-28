@@ -13,7 +13,7 @@ services:
 
   db:
     image: postgres:13
-    env_file: ./.env
+    env_file: /home/yc-user/foodgram/.env
     volumes:
       - foodgram_pg_data_production:/var/lib/postgresql/data
 
