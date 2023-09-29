@@ -33,7 +33,7 @@ services:
       - ./nginx.conf:/etc/nginx/sites-enabled/default
       - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
-      - static:/staticfiles/
+      - static:/staticfiles
       - media:/media/
     depends_on:
       - backend
