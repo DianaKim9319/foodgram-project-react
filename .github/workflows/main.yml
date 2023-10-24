@@ -119,4 +119,3 @@ jobs:
             sudo docker-compose -f docker-compose.production.yml exec -T backend python manage.py collectstatic
             sudo docker-compose -f docker-compose.production.yml exec -T backend cp -r /app/collected_static/. /backend_static/static/
             sudo docker-compose -f docker-compose.production.yml exec -T backend python manage.py loaddata dump.json
-            
