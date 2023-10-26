@@ -14,6 +14,7 @@ services:
 
   backend:
     image: dianakim9319/foodgram_backend
+    restart: always
     volumes:
       - static:/backend_static
       - media:/app/media
