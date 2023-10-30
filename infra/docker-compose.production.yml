@@ -8,7 +8,6 @@ volumes:
 services:
   db:
     image: postgres:13
-    restart: always
     env_file: /home/yc-user/foodgram/.env
     volumes:
       - foodgram_pg_data_production:/var/lib/postgresql/data
@@ -25,10 +24,8 @@ services:
 
   frontend:
     image: dianakim9319/foodgram_frontend
-    command: cp -r /app/build/. /static/
     volumes:
-        - static:/static
-    env_file: /home/yc-user/foodgram/.env
+      - ../frontend/:/app/result_build/
 
   nginx:
     image: nginx:1.19.3
@@ -37,9 +34,10 @@ services:
       - "8090:80"
     volumes:
       - ./nginx.conf:/etc/nginx/sites-enabled/default
+      - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
-      - static:/usr/share/nginx/html/
-      - media:/var/html/media/
+      - static:/staticfiles/
+      - media:/media/
     depends_on:
       - db
       - backend
