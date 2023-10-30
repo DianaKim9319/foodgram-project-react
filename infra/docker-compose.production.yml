@@ -25,10 +25,10 @@ services:
 
   frontend:
     image: dianakim9319/foodgram_frontend
+    command: cp -r /app/build/. /static/
     volumes:
-      - ../frontend/:/app/result_build/
-    depends_on:
-      - backend
+        - static:/static
+    env_file: /home/yc-user/foodgram/.env
 
   nginx:
     image: nginx:1.19.3
@@ -37,7 +37,6 @@ services:
       - "8090:80"
     volumes:
       - ./nginx.conf:/etc/nginx/sites-enabled/default
-#      - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
       - static:/usr/share/nginx/html/
       - media:/var/html/media/
