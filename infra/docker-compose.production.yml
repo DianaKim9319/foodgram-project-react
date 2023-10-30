@@ -37,7 +37,7 @@ services:
       - "8090:80"
     volumes:
       - ./nginx.conf:/etc/nginx/sites-enabled/default
-      - ../frontend/build:/usr/share/nginx/html/
+#      - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
       - static:/usr/share/nginx/html/
       - media:/var/html/media/
