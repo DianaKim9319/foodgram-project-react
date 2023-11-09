@@ -21,8 +21,6 @@ services:
     depends_on:
       - db
     env_file: /home/yc-user/foodgram/.env
-    ports:
-      - "8090:8090"
 
   frontend:
     image: dianakim9319/foodgram_frontend
@@ -33,7 +31,7 @@ services:
     image: nginx:1.19.3
     restart: always
     ports:
-      - "8090:80"
+      - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/sites-enabled/default
       - ../frontend/build:/usr/share/nginx/html/
