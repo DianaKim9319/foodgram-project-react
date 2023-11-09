@@ -1,9 +1,5 @@
 version: '3.3'
 
-networks:
-  foodgram_net:
-    driver: bridge
-
 volumes:
     foodgram_pg_data_production:
     static:
@@ -25,23 +21,17 @@ services:
     depends_on:
       - db
     env_file: /home/yc-user/foodgram/.env
-    networks:
-      - foodgram_net
 
   frontend:
     image: dianakim9319/foodgram_frontend
     volumes:
       - ../frontend/:/app/result_build/
-    networks:
-      - foodgram_net
 
   nginx:
     image: nginx:1.19.3
     restart: always
     ports:
       - "8090:80"
-    networks:
-      - foodgram_net
     volumes:
       - ./nginx.conf:/etc/nginx/sites-enabled/default
       - ../frontend/build:/usr/share/nginx/html/
