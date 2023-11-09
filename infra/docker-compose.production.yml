@@ -21,6 +21,8 @@ services:
     depends_on:
       - db
     env_file: /home/yc-user/foodgram/.env
+    ports:
+      - "8090:8090"
 
   frontend:
     image: dianakim9319/foodgram_frontend
