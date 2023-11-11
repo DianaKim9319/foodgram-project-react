@@ -19,25 +19,25 @@ services:
       - "8090:8000"
     volumes:
       - static:/backend_static
-      - media:/app/media/
+      - media:/app/media
     depends_on:
       - db
     env_file: /home/yc-user/foodgram/.env
 
   frontend:
     image: dianakim9319/foodgram_frontend
+    env_file: /home/yc-user/foodgram/.env
+    command: cp -r /app/build/. /frontend_static/
     volumes:
-      - ../frontend/:/app/result_build/
+        - static:/frontend_static
 
   nginx:
-    image: nginx:1.19.3
+    image: dianakim9319/foodgram_gateway
+    env_file: /home/yc-user/foodgram/.env
     restart: always
     ports:
       - "8000:80"
     volumes:
-      - ./nginx.conf:/etc/nginx/sites-enabled/default
-      - ../frontend/build:/usr/share/nginx/html/
-      - ../docs/:/usr/share/nginx/html/api/docs/
       - static:/staticfiles/
       - media:/media/
     depends_on:
