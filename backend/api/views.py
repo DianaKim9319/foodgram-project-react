@@ -98,13 +98,11 @@ class IngredientViewSet(BasePermissionViewSet):
         name = self.request.query_params.get(self.search_param)
 
         if name is not None:
-            queryset = queryset.filter(name__istartswith=name)
-            start_names = queryset.values_list('name', flat=True)
-            queryset = queryset.union(
-                self.queryset.filter(name__icontains=name)
-                .exclude(name__in=start_names)
+            queryset = queryset.filter(name__icontains=name)
+            queryset = sorted(
+                queryset,
+                key=lambda x: x.name.lower() != name.lower()
             )
-            queryset = queryset.order_by('name')
 
         return queryset
 
