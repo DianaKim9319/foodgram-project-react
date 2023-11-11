@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', default='django-insecure-rc07*q)in=1-@vz#dsg3evkr+-mg+=rm#xn8bfx#q_v*c!nv&k')
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['51.250.19.103', '127.0.0.1', 'localhost', 'myfoodgramjp.hopto.org']
 
