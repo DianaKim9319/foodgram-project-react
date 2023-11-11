@@ -104,6 +104,7 @@ class IngredientViewSet(BasePermissionViewSet):
                 self.queryset.filter(name__icontains=name)
                 .exclude(name__in=start_names)
             )
+            queryset = queryset.order_by('name')
 
         return queryset
 
