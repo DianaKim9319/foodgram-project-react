@@ -16,7 +16,7 @@ services:
     image: dianakim9319/foodgram_backend
     restart: always
     ports:
-      - "8000:8000"
+      - "8090:8000"
     volumes:
       - static:/backend_static
       - media:/app/media/
