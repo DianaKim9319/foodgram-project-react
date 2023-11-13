@@ -1,18 +1,13 @@
 from django.contrib import admin
 from django.db import models
 
-from .models import Recipe, Ingredient, Tag, IngredientsAmount
-
-
-class AdminPermissions(admin.ModelAdmin):
-    def has_add_permission(self, request):
-        return True
-
-    def has_change_permission(self, request, obj=None):
-        return True
-
-    def has_delete_permission(self, request, obj=None):
-        return True
+from .permissions import AdminPermissions
+from .models import (Recipe,
+                     Ingredient,
+                     Tag,
+                     IngredientsAmount,
+                     Favorite,
+                     ShoppingList)
 
 
 class IngredientsAmountInline(admin.TabularInline):
@@ -50,3 +45,21 @@ class IngredientAdmin(AdminPermissions):
 class TagAdmin(AdminPermissions):
     list_display = ('name',)
     list_filter = ('name',)
+
+
+@admin.register(IngredientsAmount)
+class IngredientsAmountAdmin(AdminPermissions):
+    list_display = ('recipe', 'ingredient_name', 'amount')
+    list_filter = ('recipe', 'ingredient_name')
+
+
+@admin.register(Favorite)
+class FavoriteAdmin(AdminPermissions):
+    list_display = ('user', 'recipe')
+    list_filter = ('user', 'recipe')
+
+
+@admin.register(ShoppingList)
+class ShoppingListAdmin(AdminPermissions):
+    list_display = ('user', 'recipe')
+    list_filter = ('user', 'recipe')

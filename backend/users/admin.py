@@ -1,11 +1,12 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .models import CustomUser
+from .models import CustomUser, Follow
+from .permissions import AdminPermissions
 
 
 @admin.register(CustomUser)
-class CustomUserAdmin(UserAdmin):
+class CustomUserAdmin(UserAdmin, AdminPermissions):
     model = CustomUser
     list_display = (
         'username',
@@ -26,15 +27,6 @@ class CustomUserAdmin(UserAdmin):
     def change_password(self, request, user_):
         return self.password_change_view(request, user_)
 
-    def has_add_permission(self, request):
-        return True
-
-    def has_change_permission(self, request, obj=None):
-        return True
-
-    def has_delete_permission(self, request, obj=None):
-        return True
-
     def block_users(self, request, queryset):
         queryset.update(is_active=False)
     block_users.short_description = 'Заблокировать выбранных пользователей'
@@ -42,3 +34,9 @@ class CustomUserAdmin(UserAdmin):
     def activate_users(self, request, queryset):
         queryset.update(is_active=True)
     activate_users.short_description = 'Активировать выбранных пользователей'
+
+
+class FollowAdmin(AdminPermissions):
+    model = Follow
+    list_display = ('user', 'author')
+    list_filter = ('user', 'author')
