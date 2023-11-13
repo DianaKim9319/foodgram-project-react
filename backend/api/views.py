@@ -91,7 +91,6 @@ class IngredientViewSet(BasePermissionViewSet):
     serializer_class = IngredientSearchSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = IngredientFilter
-    search_param = 'name'
     pagination_class = None
 
 
