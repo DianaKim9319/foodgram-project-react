@@ -1,4 +1,5 @@
 from django.utils.translation import gettext_lazy as _
+from django.db import transaction
 from rest_framework.serializers import (ModelSerializer,
                                         CharField,
                                         SerializerMethodField,
@@ -13,7 +14,7 @@ from recipes.models import (Recipe,
                             Tag,
                             IngredientsAmount,)
 
-from .validators import ingredients_validator
+from .validators import ingredients_validator, cooking_time_validator
 from .mixins import IsSubscribedMixin, IngredienteMixin
 from .fields import Base64ImageField
 
@@ -97,7 +98,7 @@ class SubscriptionPageSerializer(CustomUserSerializer):
         read_only_fields = ('__all__',)
 
     @staticmethod
-    def get_recipes_count(obj: CustomUser):
+    def get_recipes_count(obj):
         return obj.recipes.all().count()
 
 
@@ -222,16 +223,20 @@ class RecipeCreateSerializer(ModelSerializer, IngredienteMixin):
         tags = data.get('tags')
         ingredients = data.get('ingredients')
         ingredients_validated = ingredients_validator(ingredients)
+        cooking_time = data.get('cooking_time')
+        cooking_time_validated = cooking_time_validator(cooking_time)
 
         data.update(
             {
                 'author': user,
                 'tags': tags,
                 'ingredients': ingredients_validated,
+                'cooking_time': cooking_time_validated,
             }
         )
         return data
 
+    @transaction.atomic
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients')
         tags_data = validated_data.pop('tags')
@@ -245,6 +250,7 @@ class RecipeCreateSerializer(ModelSerializer, IngredienteMixin):
         recipe.author = request.user
         return recipe
 
+    @transaction.atomic
     def update(self, recipe, validated_data):
         ingredients = validated_data.pop('ingredients')
         tags_data = validated_data.pop('tags')

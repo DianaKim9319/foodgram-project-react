@@ -69,6 +69,11 @@ DATABASES = {
     }
 }
 
+MIN_INGREDIENT_AMOUNT = 1
+MAX_INGREDIENT_AMOUNT = 100
+MIN_COOKING_TIME = 1
+MAX_COOKING_TIME = 600
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
