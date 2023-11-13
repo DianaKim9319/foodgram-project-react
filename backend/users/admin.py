@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .models import CustomUser, Follow
-from .permissions import AdminPermissions
+from users.models import CustomUser, Follow
+from users.permissions import AdminPermissions
 
 
 @admin.register(CustomUser)

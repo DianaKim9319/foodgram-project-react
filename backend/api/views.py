@@ -14,16 +14,16 @@ from djoser.serializers import SetPasswordSerializer
 from users.models import CustomUser, Follow
 from recipes.models import (Tag, Ingredient, Recipe,
                             Favorite, ShoppingList, IngredientsAmount)
-from .serializers import (CustomUserSerializer,
-                          IngredientSearchSerializer,
-                          TagSerializer,
-                          RecipeSerializer,
-                          RecipeCreateSerializer,
-                          SubscriptionPageSerializer,
-                          ShortRecipeSerializer)
-from .mixins import AddDeleteMixin
-from .filters import RecipeFilter, IngredientFilter
-from .permissions import AuthorOrReadOnly
+from api.serializers import (CustomUserSerializer,
+                             IngredientSearchSerializer,
+                             TagSerializer,
+                             RecipeSerializer,
+                             RecipeCreateSerializer,
+                             SubscriptionPageSerializer,
+                             ShortRecipeSerializer)
+from api.mixins import AddDeleteMixin
+from api.filters import RecipeFilter, IngredientFilter
+from api.permissions import AuthorOrReadOnly
 
 
 class BasePermissionViewSet(viewsets.ModelViewSet):

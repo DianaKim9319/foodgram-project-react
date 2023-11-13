@@ -1,13 +1,13 @@
 from django.contrib import admin
 from django.db import models
 
-from .permissions import AdminPermissions
-from .models import (Recipe,
-                     Ingredient,
-                     Tag,
-                     IngredientsAmount,
-                     Favorite,
-                     ShoppingList)
+from recipes.permissions import AdminPermissions
+from recipes.models import (Recipe,
+                            Ingredient,
+                            Tag,
+                            IngredientsAmount,
+                            Favorite,
+                            ShoppingList)
 
 
 class IngredientsAmountInline(admin.TabularInline):

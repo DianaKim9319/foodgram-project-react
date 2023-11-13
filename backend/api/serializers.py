@@ -14,9 +14,9 @@ from recipes.models import (Recipe,
                             Tag,
                             IngredientsAmount,)
 
-from .validators import ingredients_validator, cooking_time_validator
-from .mixins import IsSubscribedMixin, IngredienteMixin
-from .fields import Base64ImageField
+from api.validators import ingredients_validator, cooking_time_validator
+from api.mixins import IsSubscribedMixin, IngredienteMixin
+from api.fields import Base64ImageField
 
 
 class CurrentUserSerializer(UserSerializer, IsSubscribedMixin):
