@@ -93,7 +93,7 @@ class IngredientViewSet(BasePermissionViewSet):
     filter_backends = (DjangoFilterBackend, SearchFilter)
     filterset_class = IngredientFilter
     search_fields = ('name__istartswith',)
-    search_param = 'name'
+    search_param = '^name'
     pagination_class = None
 
     # def get_queryset(self):
