@@ -223,7 +223,7 @@ class RecipeCreateSerializer(ModelSerializer, IngredienteMixin):
         tags = data.get('tags')
         ingredients = data.get('ingredients')
         ingredients_validated = ingredients_validator(ingredients)
-        cooking_time = data.get('cooking_time')
+        cooking_time = int(data.get('cooking_time'))
         cooking_time_validated = cooking_time_validator(cooking_time)
 
         data.update(
