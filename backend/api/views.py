@@ -106,8 +106,7 @@ class IngredientViewSet(BasePermissionViewSet):
     #             queryset,
     #             key=lambda x: x.name.lower() != name.lower()
     #         )
-
-        # return queryset
+    # return queryset
 
 
 class TagViewSet(BasePermissionViewSet):
