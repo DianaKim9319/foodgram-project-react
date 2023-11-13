@@ -23,7 +23,7 @@ class RecipeFilter(FilterSet):
 
     class Meta:
         model = Recipe
-        fields = ('author', 'in_favorites', 'tags', 'in_shopping_list', )
+        fields = ('author', 'is_favorited', 'tags', 'is_in_shopping_cart', )
 
     def get_is_favorited(self, queryset, value):
         if value:

@@ -118,7 +118,7 @@ class RecipeViewSet(viewsets.ModelViewSet, AddDeleteMixin):
     queryset = Recipe.objects.all().order_by('-id')
     pagination_class = PageNumberPagination
     permission_classes = (AuthorOrReadOnly,)
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
     def get_serializer_class(self):
