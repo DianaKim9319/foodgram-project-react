@@ -22,7 +22,7 @@ from .serializers import (CustomUserSerializer,
                           SubscriptionPageSerializer,
                           ShortRecipeSerializer)
 from .mixins import AddDeleteMixin
-from .filters import RecipeFilter
+from .filters import RecipeFilter, IngredientFilter
 from .permissions import AuthorOrReadOnly
 
 
@@ -90,23 +90,24 @@ class CustomUserViewSet(UserViewSet, AddDeleteMixin):
 class IngredientViewSet(BasePermissionViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSearchSerializer
-    filter_backends = [SearchFilter]
-    search_fields = ['name__istartswith']
+    filter_backends = (DjangoFilterBackend, SearchFilter)
+    filterset_class = IngredientFilter
+    search_fields = ('name__istartswith',)
     search_param = 'name'
     pagination_class = None
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        name = self.request.query_params.get(self.search_param)
+    # def get_queryset(self):
+    #     queryset = super().get_queryset()
+    #     name = self.request.query_params.get(self.search_param)
+    #
+    #     if name is not None:
+    #         queryset = queryset.filter(name__icontains=name)
+    #         queryset = sorted(
+    #             queryset,
+    #             key=lambda x: x.name.lower() != name.lower()
+    #         )
 
-        if name is not None:
-            queryset = queryset.filter(name__icontains=name)
-            queryset = sorted(
-                queryset,
-                key=lambda x: x.name.lower() != name.lower()
-            )
-
-        return queryset
+        # return queryset
 
 
 class TagViewSet(BasePermissionViewSet):
