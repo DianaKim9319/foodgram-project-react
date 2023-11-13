@@ -2,16 +2,27 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-dotenv_path = os.path.join(os.path.dirname(__file__), 'foodgram-project-react', 'infra', '.env')
+dotenv_path = os.path.join(
+    os.path.dirname(__file__),
+    'foodgram-project-react', 'infra', '.env'
+)
 load_dotenv(dotenv_path)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY', default='django-insecure-rc07*q)in=1-@vz#dsg3evkr+-mg+=rm#xn8bfx#q_v*c!nv&k')
+SECRET_KEY = os.getenv(
+    'SECRET_KEY',
+    default='default_secret_key'
+)
 
-DEBUG = False
+DEBUG = os.getenv('DJANGO_DEBUG') == 'True'
 
-ALLOWED_HOSTS = ['51.250.19.103', '127.0.0.1', 'localhost', 'myfoodgramjp.hopto.org']
+ALLOWED_HOSTS = [
+    '51.250.19.103',
+    '127.0.0.1',
+    'localhost',
+    'myfoodgramjp.hopto.org'
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',

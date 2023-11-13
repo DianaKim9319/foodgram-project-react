@@ -29,7 +29,7 @@ class CustomUser(AbstractUser):
     )
 
     class Meta:
-        ordering = ('username',)
+        ordering = ['username']
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
 
@@ -57,7 +57,7 @@ class Follow(models.Model):
         verbose_name_plural = 'Подписки'
         constraints = [
             models.UniqueConstraint(
-                fields=('user', 'author',),
+                fields=['user', 'author'],
                 name='unique_user_author'
             )]
 
