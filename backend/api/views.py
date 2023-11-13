@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from django.db.models import Sum
+from django.db.models import Sum, Case, When, Value, BooleanField
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -26,9 +26,9 @@ from .permissions import AuthorOrReadOnly
 
 class BasePermissionViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
-        if self.action in ['list', 'retrieve']:
+        if self.action in ('list', 'retrieve'):
             return [AllowAny()]
-        elif self.action in ['create', 'update', 'partial_update', 'destroy']:
+        elif self.action in ('create', 'update', 'partial_update', 'destroy'):
             return [IsAdminUser()]
         return super().get_permissions()
 
@@ -45,7 +45,7 @@ class CustomUserViewSet(UserViewSet, AddDeleteMixin):
 
     @action(
         detail=True,
-        methods=['post', 'delete'],
+        methods=('post', 'delete'),
         url_path='subscribe',
         permission_classes=(IsAuthenticated,),
     )
@@ -67,7 +67,7 @@ class CustomUserViewSet(UserViewSet, AddDeleteMixin):
 
     @action(
         detail=False,
-        methods=['get'],
+        methods=('get',),
         url_path='subscriptions',
         permission_classes=(IsAuthenticated,)
     )
@@ -90,7 +90,7 @@ class IngredientViewSet(BasePermissionViewSet):
     serializer_class = IngredientSearchSerializer
     filter_backends = [SearchFilter]
     search_fields = ['name__istartswith']
-    search_param = "name"
+    search_param = 'name'
     pagination_class = None
 
     def get_queryset(self):
@@ -99,10 +99,13 @@ class IngredientViewSet(BasePermissionViewSet):
 
         if name is not None:
             queryset = queryset.filter(name__icontains=name)
-            queryset = sorted(
-                queryset,
-                key=lambda x: x.name.lower() != name.lower()
-            )
+            queryset = queryset.annotate(
+                is_exact_name=Case(
+                    When(name__iexact=name, then=Value(1)),
+                    default=Value(0),
+                    output_field=BooleanField()
+                )
+            ).order_by('-is_exact_name', 'name')
 
         return queryset
 
@@ -168,7 +171,7 @@ class RecipeViewSet(viewsets.ModelViewSet, AddDeleteMixin):
 
     @action(
         detail=True,
-        methods=['post', 'delete'],
+        methods=('post', 'delete'),
         url_path='favorite',
         permission_classes=(IsAuthenticated,)
     )
@@ -189,7 +192,7 @@ class RecipeViewSet(viewsets.ModelViewSet, AddDeleteMixin):
 
     @action(
         detail=True,
-        methods=['post', 'delete'],
+        methods=('post', 'delete'),
         url_path='shopping_cart',
         permission_classes=(IsAuthenticated,)
     )
@@ -209,7 +212,7 @@ class RecipeViewSet(viewsets.ModelViewSet, AddDeleteMixin):
         )
 
     @action(
-        methods=['get'],
+        methods=('get',),
         detail=False,
         url_path='download_shopping_cart',
         permission_classes=(IsAuthenticated,)
