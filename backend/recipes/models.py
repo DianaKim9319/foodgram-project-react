@@ -22,6 +22,11 @@ class Tag(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name = 'Тег'
+        verbose_name_plural = 'Теги'
+        ordering = ['id']
+
 
 class Ingredient(models.Model):
     name = models.CharField(
@@ -36,10 +41,10 @@ class Ingredient(models.Model):
     class Meta:
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
-        ordering = ('name',)
+        ordering = ['name']
         constraints = [
             models.UniqueConstraint(
-                fields=('name', 'measurement_unit'),
+                fields=['name', 'measurement_unit'],
                 name='unique_name_measurement_unit'
             )]
 
@@ -91,10 +96,10 @@ class Recipe(models.Model):
     class Meta:
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
-        ordering = ('-pub_date',)
+        ordering = ['-pub_date']
         constraints = [
             models.UniqueConstraint(
-                fields=('name', 'author',),
+                fields=['name', 'author'],
                 name='unique_name_author'
             )]
 
@@ -125,7 +130,7 @@ class IngredientsAmount(models.Model):
         verbose_name_plural = 'Количество ингридиентов'
         constraints = [
             models.UniqueConstraint(
-                fields=('recipe', 'ingredient_name',),
+                fields=['recipe', 'ingredient_name'],
                 name='unique_recipe_ingredient',
             ),
         ]
@@ -153,7 +158,7 @@ class Favorite(models.Model):
         verbose_name_plural = 'Списки избранного'
         constraints = [
             models.UniqueConstraint(
-                fields=('recipe', 'user',),
+                fields=['recipe', 'user'],
                 name='unique_favorites_recipe_user',
             ),
         ]
@@ -181,7 +186,7 @@ class ShoppingList(models.Model):
         verbose_name_plural = 'Списки покупок'
         constraints = [
             models.UniqueConstraint(
-                fields=('recipe', 'user',),
+                fields=['recipe', 'user'],
                 name='unique_shopping_list_recipe_user',
             ),
         ]
