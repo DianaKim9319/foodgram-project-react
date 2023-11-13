@@ -14,7 +14,7 @@ from recipes.models import (Recipe,
                             Tag,
                             IngredientsAmount,)
 
-from .validators import ingredients_validator, cooking_time_validator
+from .validators import ingredients_validator
 from .mixins import IsSubscribedMixin, IngredienteMixin
 from .fields import Base64ImageField
 
