@@ -5,7 +5,7 @@ from recipes.models import Ingredient, Recipe, Tag
 
 class IngredientFilter(FilterSet):
     ingredient_name = filters.CharFilter(
-        lookup_expr='icontains'
+        lookup_expr='istartswith'
     )
 
     class Meta:
