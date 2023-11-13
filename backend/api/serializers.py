@@ -14,7 +14,7 @@ from recipes.models import (Recipe,
                             Tag,
                             IngredientsAmount,)
 
-from .validators import ingredients_validator
+from .validators import ingredients_validator, cooking_time_validator
 from .mixins import IsSubscribedMixin, IngredienteMixin
 from .fields import Base64ImageField
 
@@ -223,15 +223,15 @@ class RecipeCreateSerializer(ModelSerializer, IngredienteMixin):
         tags = data.get('tags')
         ingredients = data.get('ingredients')
         ingredients_validated = ingredients_validator(ingredients)
-        # cooking_time = int(data.get('cooking_time'))
-        # cooking_time_validated = cooking_time_validator(cooking_time)
+        cooking_time = data.get('cooking_time')
+        cooking_time_validator(cooking_time)
 
         data.update(
             {
                 'author': user,
                 'tags': tags,
                 'ingredients': ingredients_validated,
-                # 'cooking_time': cooking_time_validated,
+                'cooking_time': cooking_time,
             }
         )
         return data

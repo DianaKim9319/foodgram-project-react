@@ -46,7 +46,7 @@ def cooking_time_validator(cooking_time):
     if not MIN_COOKING_TIME <= cooking_time <= MAX_COOKING_TIME:
         raise ValidationError({
             'cooking_time': [
-                'Время готовки должно быть от {} до {} минут.'.format(
+                'Время приготовления должно быть от {} до {} минут.'.format(
                     MIN_COOKING_TIME, MAX_COOKING_TIME
                 )
             ]
