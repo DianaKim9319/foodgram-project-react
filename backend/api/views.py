@@ -90,23 +90,10 @@ class CustomUserViewSet(UserViewSet, AddDeleteMixin):
 class IngredientViewSet(BasePermissionViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSearchSerializer
-    filter_backends = (DjangoFilterBackend, SearchFilter)
+    filter_backends = (DjangoFilterBackend,)
     filterset_class = IngredientFilter
-    search_fields = ('name__istartswith',)
-    search_param = '^name'
+    search_param = 'name'
     pagination_class = None
-
-    # def get_queryset(self):
-    #     queryset = super().get_queryset()
-    #     name = self.request.query_params.get(self.search_param)
-    #
-    #     if name is not None:
-    #         queryset = queryset.filter(name__icontains=name)
-    #         queryset = sorted(
-    #             queryset,
-    #             key=lambda x: x.name.lower() != name.lower()
-    #         )
-    # return queryset
 
 
 class TagViewSet(BasePermissionViewSet):
