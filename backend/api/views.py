@@ -1,6 +1,7 @@
 from django.http import HttpResponse
-from django.db.models import Sum, Case, When, Value, BooleanField
+from django.db.models import Sum, F
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
@@ -21,6 +22,7 @@ from .serializers import (CustomUserSerializer,
                           SubscriptionPageSerializer,
                           ShortRecipeSerializer)
 from .mixins import AddDeleteMixin
+from .filters import RecipeFilter
 from .permissions import AuthorOrReadOnly
 
 
@@ -99,13 +101,9 @@ class IngredientViewSet(BasePermissionViewSet):
 
         if name is not None:
             queryset = queryset.filter(name__icontains=name)
-            queryset = queryset.annotate(
-                is_exact_name=Case(
-                    When(name__iexact=name, then=Value(1)),
-                    default=Value(0),
-                    output_field=BooleanField()
-                )
-            ).order_by('-is_exact_name', 'name')
+            queryset = queryset.order_by(
+                F('name__iexact') if name else 'name'
+            )
 
         return queryset
 
@@ -117,57 +115,16 @@ class TagViewSet(BasePermissionViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet, AddDeleteMixin):
-    queryset = Recipe.objects.all()
+    queryset = Recipe.objects.all().order_by('-id')
     pagination_class = PageNumberPagination
     permission_classes = (AuthorOrReadOnly,)
-    serializer_class = RecipeSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = RecipeFilter
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
             return RecipeSerializer
         return RecipeCreateSerializer
-
-    def get_queryset(self):
-        queryset = self.queryset
-        author = self.request.query_params.get('author')
-        if author is not None:
-            if author == 'me':
-                queryset = queryset.filter(author=self.request.user)
-            else:
-                queryset = queryset.filter(author_id=author)
-
-        tags = self.request.query_params.getlist('tags')
-        if tags:
-            queryset = queryset.filter(tags__slug__in=tags)
-
-        if not self.request.user.is_anonymous:
-            is_in_cart = self.request.query_params.get(
-                'is_in_shopping_cart'
-            )
-            if is_in_cart == '1':
-                queryset = queryset.filter(
-                    in_shopping_list__user=self.request.user
-                )
-            elif is_in_cart == '0':
-                queryset = queryset.exclude(
-                    in_shopping_list__user=self.request.user
-                )
-
-            is_favorite = self.request.query_params.get(
-                'is_favorited'
-            )
-            if is_favorite == '1':
-                queryset = queryset.filter(
-                    in_favorites__user=self.request.user
-                )
-            elif is_favorite == '0':
-                queryset = queryset.exclude(
-                    in_favorites__user=self.request.user
-                )
-
-        queryset = queryset.order_by('-pub_date')
-
-        return queryset.distinct()
 
     @action(
         detail=True,
