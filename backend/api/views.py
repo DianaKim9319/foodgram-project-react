@@ -1,6 +1,7 @@
 from django.http import HttpResponse
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404
+from django.conf import settings
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -187,12 +188,12 @@ class RecipeViewSet(viewsets.ModelViewSet, AddDeleteMixin):
         }
 
         # Создаем динамический файл TXT
-        filename = 'shopping_list.txt'
-        response = HttpResponse(content_type='text/plain')
-        response['Content-Disposition'] = 'attachment; filename={0}'.format(
-            filename
-        )
+        filename = settings.SHOPPING_LIST_FILENAME
+        response = HttpResponse(content_type=settings.CONTENT_TYPE)
+        response['Content-Disposition'] = f'attachment; filename={filename}'
+
         response.write('Ингредиент, Количество, Единица измерения:\n')
+
         for ingredient, data in ingredient_totals.items():
             line = f'- {ingredient}, {data["amount"]}, {data["unit"]}\n'
             response.write(line)

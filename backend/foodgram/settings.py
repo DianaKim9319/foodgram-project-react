@@ -86,6 +86,9 @@ MAX_INGREDIENT_AMOUNT = 100
 MIN_COOKING_TIME = 1
 MAX_COOKING_TIME = 600
 
+SHOPPING_LIST_FILENAME = 'shopping_list.txt'
+CONTENT_TYPE = 'text/plain'
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
