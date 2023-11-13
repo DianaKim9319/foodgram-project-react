@@ -101,8 +101,9 @@ class IngredientViewSet(BasePermissionViewSet):
 
         if name is not None:
             queryset = queryset.filter(name__icontains=name)
-            queryset = queryset.order_by(
-                F('name__iexact') if name else 'name'
+            queryset = sorted(
+                queryset,
+                key=lambda x: x.name.lower() != name.lower()
             )
 
         return queryset
