@@ -38,7 +38,6 @@ class BasePermissionViewSet(viewsets.ModelViewSet):
 class CustomUserViewSet(UserViewSet, AddDeleteMixin):
     pagination_class = PageNumberPagination
     queryset = CustomUser.objects.all()
-    serializer_class = CustomUserSerializer
 
     def get_serializer_class(self):
         if self.action == 'set_password':
@@ -102,7 +101,7 @@ class TagViewSet(BasePermissionViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet, AddDeleteMixin):
-    queryset = Recipe.objects.all().order_by('-id')
+    queryset = Recipe.objects.all()
     pagination_class = PageNumberPagination
     permission_classes = (AuthorOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
@@ -188,9 +187,10 @@ class RecipeViewSet(viewsets.ModelViewSet, AddDeleteMixin):
         }
 
         # Создаем динамический файл TXT
-        filename = settings.SHOPPING_LIST_FILENAME
         response = HttpResponse(content_type=settings.CONTENT_TYPE)
-        response['Content-Disposition'] = f'attachment; filename={filename}'
+        response['Content-Disposition'] = (
+            f'attachment; filename={settings.SHOPPING_LIST_FILENAME}'
+        )
 
         response.write('Ингредиент, Количество, Единица измерения:\n')
 

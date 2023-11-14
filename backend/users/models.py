@@ -21,7 +21,7 @@ class CustomUser(AbstractUser):
     email = models.EmailField(
         verbose_name='Адрес электронной почты',
         max_length=254,
-        validators=[validate_email],
+        validators=(validate_email,),
         unique=True)
     password = models.CharField(
         verbose_name='Пароль',
@@ -29,7 +29,7 @@ class CustomUser(AbstractUser):
     )
 
     class Meta:
-        ordering = ['username']
+        ordering = ('username',)
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
 
