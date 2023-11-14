@@ -95,7 +95,7 @@ class SubscriptionPageSerializer(CustomUserSerializer):
             'recipes',
             'recipes_count',
         )
-        read_only_fields = '__all__'
+        read_only_fields = ('__all__',)
 
     @staticmethod
     def get_recipes_count(obj):
@@ -108,7 +108,7 @@ class TagSerializer(ModelSerializer):
     class Meta:
         model = Tag
         fields = '__all__'
-        read_only_fields = '__all__'
+        read_only_fields = ('__all__',)
 
 
 class IngredientSearchSerializer(ModelSerializer):
@@ -117,7 +117,7 @@ class IngredientSearchSerializer(ModelSerializer):
     class Meta:
         model = Ingredient
         fields = '__all__'
-        read_only_fields = '__all__'
+        read_only_fields = ('__all__',)
 
 
 class IngredientSerializer(ModelSerializer):
