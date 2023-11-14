@@ -155,7 +155,7 @@ class RecipeSerializer(ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     author = CustomUserSerializer(read_only=True)
     ingredients = IngredientSerializer(
-        read_only=True, many=True, source='ingredients'
+        read_only=True, many=True,
     )
     is_favorited = SerializerMethodField()
     is_in_shopping_cart = SerializerMethodField()
