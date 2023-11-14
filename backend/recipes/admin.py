@@ -19,7 +19,7 @@ class RecipesAdmin(AdminPermissions):
     list_display = ('name', 'author', 'favorite_count')
     list_filter = ('author', 'name', 'tags')
     search_fields = ('name', 'author__username')
-    inlines = [IngredientsAmountInline]
+    inlines = (IngredientsAmountInline,)
     readonly_fields = ('favorite_count',)
 
     def get_queryset(self, request):
