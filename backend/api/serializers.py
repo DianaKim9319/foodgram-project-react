@@ -96,6 +96,12 @@ class SubscriptionPageSerializer(CustomUserSerializer):
             'recipes_count',
         )
         read_only_fields = ('__all__',)
+        # Cтанислав, добрый день. Если Вы читаете это сообщение,
+        # то я не смогла найти Вас в пачке, а куратор мне так и не ответила.
+        # Не удаётся применить правки, которые Вы посоветовали,
+        # так как read_only_fields ждёт от меня list или turple.
+        # Данную информацию я нашла в документации,
+        # после нескольких попыток понять, почему у меня всё сломалось.:)
 
     @staticmethod
     def get_recipes_count(obj):
