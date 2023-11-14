@@ -3,9 +3,9 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 from users.models import CustomUser
 from foodgram.settings import (MIN_COOK_TIME,
-                                MAX_COOK_TIME,
-                                MAX_INGR_AMOUNT,
-                                MIN_INGR_AMOUNT)
+                               MAX_COOK_TIME,
+                               MAX_INGR_AMOUNT,
+                               MIN_INGR_AMOUNT)
 
 
 class Tag(models.Model):
