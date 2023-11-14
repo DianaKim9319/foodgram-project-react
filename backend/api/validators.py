@@ -39,7 +39,6 @@ def ingredients_validator(ingredients):
 
 def cooking_time_validator(cooking_time):
     """
-    Валидирует суммарное время готовки.
 
     Проверяет минимальное и максимальное время готовки.
     """
