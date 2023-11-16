@@ -17,7 +17,7 @@ class IngredientsAmountInline(admin.TabularInline):
 @admin.register(Recipe)
 class RecipesAdmin(AdminPermissions):
     list_display = ('name', 'author', 'favorite_count')
-    list_filter = ('author', 'name', 'tags')
+    list_filter = ('tags',)
     search_fields = ('name', 'author__username')
     inlines = (IngredientsAmountInline,)
     readonly_fields = ('favorite_count',)
@@ -38,7 +38,8 @@ class RecipesAdmin(AdminPermissions):
 @admin.register(Ingredient)
 class IngredientAdmin(AdminPermissions):
     list_display = ('name', 'measurement_unit')
-    list_filter = ('name',)
+    search_fields = ('name',)
+    list_filter = ('measurement_unit',)
 
 
 @admin.register(Tag)
@@ -50,7 +51,8 @@ class TagAdmin(AdminPermissions):
 @admin.register(IngredientsAmount)
 class IngredientsAmountAdmin(AdminPermissions):
     list_display = ('recipe', 'ingredient_name', 'amount')
-    list_filter = ('recipe', 'ingredient_name')
+    search_fields = ('recipe', 'ingredient_name')
+    list_filter = ('recipe__tags',)
 
 
 @admin.register(Favorite)
