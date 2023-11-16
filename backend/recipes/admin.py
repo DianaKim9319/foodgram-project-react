@@ -51,7 +51,7 @@ class TagAdmin(AdminPermissions):
 @admin.register(IngredientsAmount)
 class IngredientsAmountAdmin(AdminPermissions):
     list_display = ('recipe', 'ingredient_name', 'amount')
-    search_fields = ('recipe', 'ingredient_name')
+    search_fields = ('recipe__name', 'ingredient_name__name')
     list_filter = ('recipe__tags',)
 
 
