@@ -15,7 +15,7 @@ class CustomUserAdmin(UserAdmin, AdminPermissions):
         'last_name',
         'is_active'
     )
-    list_filter = ('email', 'username', 'is_active')
+    list_filter = ('is_active',)
     search_fields = (
         'username',
         'email',
